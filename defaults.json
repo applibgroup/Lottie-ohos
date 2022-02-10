@@ -1,0 +1,27 @@
+{
+  "message": {
+    "componentName": "Prompt",
+    "showToast": "Show floating window",
+    "showDialog": "Show dialog",
+    "toastMessage": "message shown by showToast method",
+    "dialog": {
+      "title": "Dialog title",
+      "message": "Block the contents of the box, inform the current status, information and solutions, and describe the text as much as possible within three lines",
+      "buttons": [
+        {
+          "text": "Yes",
+          "color": "#0faeff"
+        },
+        {
+          "text": "No",
+          "color": "#0faeff"
+        },
+        {
+          "text": "Cancel"
+        }
+      ]
+    },
+    "toastSuccess": "Successful callback: check button number --- ",
+    "toastCancel": "Cancel callback"
+  }
+}

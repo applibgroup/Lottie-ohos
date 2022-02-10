@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DirectionalLayout
+    xmlns:ohos="http://schemas.huawei.com/res/ohos"
+    ohos:height="match_parent"
+    ohos:width="match_parent"
+    ohos:background_element="#225577"
+    ohos:orientation="vertical"
+    ohos:alignment="center"
+    ohos:top_margin="10vp"
+    >
+
+    <Button
+        ohos:id="$+id:asset_load"
+        ohos:height="match_content"
+        ohos:width="match_content"
+        ohos:margin="10vp"
+        ohos:padding="10vp"
+        ohos:background_element="#B81319"
+        ohos:layout_alignment="center"
+        ohos:text_color="#FFFFFF"
+        ohos:text_size="18vp"
+        ohos:text="Load Animation from Json or Zip"/>
+
+    <Button
+        ohos:id="$+id:asset_load_url"
+        ohos:height="match_content"
+        ohos:width="match_content"
+        ohos:margin="10vp"
+        ohos:padding="10vp"
+        ohos:background_element="#B81319"
+        ohos:layout_alignment="center"
+        ohos:text_color="#FFFFFF"
+        ohos:text_size="18vp"
+        ohos:text="Load animation from Url"/>
+
+    <!--<Button
+        ohos:id="$+id:dynamic_desc"
+        ohos:height="match_content"
+        ohos:width="200vp"
+        ohos:margin="10vp"
+        ohos:padding="10vp"
+        ohos:background_element="#B81319"
+        ohos:layout_alignment="center"
+        ohos:text_color="#FFFFFF"
+        ohos:text_size="20vp"
+        ohos:text="Dynamic description"/>
+
+    <Button
+        ohos:id="$+id:dynamic_text"
+        ohos:height="match_content"
+        ohos:width="200vp"
+        ohos:margin="10vp"
+        ohos:padding="10vp"
+        ohos:background_element="#B81319"
+        ohos:layout_alignment="center"
+        ohos:text_color="#FFFFFF"
+        ohos:text_size="20vp"
+        ohos:text="Dynamic text"/>-->
+
+</DirectionalLayout>

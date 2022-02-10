@@ -1,0 +1,61 @@
+{
+  "app": {
+    "bundleName": "com.airbnb.lottie.demo",
+    "vendor": "airbnb",
+    "version": {
+      "code": 1000000,
+      "name": "1.0.0"
+    }
+  },
+  "deviceConfig": {},
+  "module": {
+    "package": "com.airbnb.lottie.demo",
+    "name": ".Lottie",
+    "reqCapabilities": [
+      "video_support"
+    ],
+    "deviceType": [
+      "default",
+      "tablet"
+    ],
+    "distro": {
+      "deliveryWithInstall": true,
+      "moduleName": "entry",
+      "moduleType": "entry",
+      "installationFree" : true
+    },
+    "abilities": [
+      {
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ],
+        "orientation": "portrait",
+        "name": "com.airbnb.lottie.demo.MainAbility",
+        "icon": "$media:icon",
+        "description": "$string:mainability_description",
+        "label": "$string:app_name",
+        "type": "page",
+        "launchType": "standard"
+      }
+    ],
+    "reqPermissions": [
+      {
+        "name": "ohos.permission.INTERNET",
+        "reason": "get right",
+        "usedScene": {
+          "ability": [
+            "com.airbnb.lottie.demo.MainAbility"
+          ],
+          "when": "always"
+        }
+      }
+    ]
+  }
+}
