@@ -28,6 +28,27 @@ class GradientStrokeParser {
 
     private static final JsonReader.Options DASH_PATTERN_NAMES = JsonReader.Options.of("n", "v");
 
+    private static AnimatableGradientColorValue getColorParser(JsonReader reader,LottieComposition composition) throws IOException {
+        int points = -1;
+        AnimatableGradientColorValue color = null;
+        reader.beginObject();
+        while (reader.hasNext()) {
+            switch (reader.selectName(GRADIENT_NAMES)) {
+                case 0:
+                    points = reader.nextInt();
+                    break;
+                case 1:
+                    color = AnimatableValueParser.parseGradientColor(reader, composition, points);
+                    break;
+                default:
+                    reader.skipName();
+                    reader.skipValue();
+            }
+        }
+        reader.endObject();
+        return color;
+    }
+
     static GradientStroke parse(JsonReader reader, LottieComposition composition) throws IOException {
         String name = null;
         AnimatableGradientColorValue color = null;
@@ -42,6 +63,7 @@ class GradientStrokeParser {
         float miterLimit = 0f;
         boolean hidden = false;
 
+
         List<AnimatableFloatValue> lineDashPattern = new ArrayList<>();
 
         while (reader.hasNext()) {
@@ -50,22 +72,7 @@ class GradientStrokeParser {
                     name = reader.nextString();
                     break;
                 case 1:
-                    int points = -1;
-                    reader.beginObject();
-                    while (reader.hasNext()) {
-                        switch (reader.selectName(GRADIENT_NAMES)) {
-                            case 0:
-                                points = reader.nextInt();
-                                break;
-                            case 1:
-                                color = AnimatableValueParser.parseGradientColor(reader, composition, points);
-                                break;
-                            default:
-                                reader.skipName();
-                                reader.skipValue();
-                        }
-                    }
-                    reader.endObject();
+                color = getColorParser(reader,composition);
                     break;
                 case 2:
                     opacity = AnimatableValueParser.parseInteger(reader, composition);
@@ -95,38 +102,7 @@ class GradientStrokeParser {
                     hidden = reader.nextBoolean();
                     break;
                 case 11:
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        String n = null;
-                        AnimatableFloatValue val = null;
-                        reader.beginObject();
-                        while (reader.hasNext()) {
-                            switch (reader.selectName(DASH_PATTERN_NAMES)) {
-                                case 0:
-                                    n = reader.nextString();
-                                    break;
-                                case 1:
-                                    val = AnimatableValueParser.parseFloat(reader, composition);
-                                    break;
-                                default:
-                                    reader.skipName();
-                                    reader.skipValue();
-                            }
-                        }
-                        reader.endObject();
-
-                        if (n.equals("o")) {
-                            offset = val;
-                        } else if (n.equals("d") || n.equals("g")) {
-                            composition.setHasDashPattern(true);
-                            lineDashPattern.add(val);
-                        }
-                    }
-                    reader.endArray();
-                    if (lineDashPattern.size() == 1) {
-                        // If there is only 1 value then it is assumed to be equal parts on and off.
-                        lineDashPattern.add(lineDashPattern.get(0));
-                    }
+                    offset = getOffset(reader,composition,offset,lineDashPattern);
                     break;
                 default:
                     reader.skipName();
@@ -138,5 +114,42 @@ class GradientStrokeParser {
     opacity = opacity == null ? new AnimatableIntegerValue(Collections.singletonList(new Keyframe<>(100))) : opacity;
         return new GradientStroke(name, gradientType, color, opacity, startPoint, endPoint, width, capType, joinType,
             miterLimit, lineDashPattern, offset, hidden);
+    }
+
+    private static AnimatableFloatValue getOffset(JsonReader reader, LottieComposition composition , AnimatableFloatValue offset, List<AnimatableFloatValue> lineDashPattern) throws IOException {
+        reader.beginArray();
+        while (reader.hasNext()) {
+            String n = null;
+            AnimatableFloatValue val = null;
+            reader.beginObject();
+            while (reader.hasNext()) {
+                switch (reader.selectName(DASH_PATTERN_NAMES)) {
+                    case 0:
+                        n = reader.nextString();
+                        break;
+                    case 1:
+                        val = AnimatableValueParser.parseFloat(reader, composition);
+                        break;
+                    default:
+                        reader.skipName();
+                        reader.skipValue();
+                }
+            }
+            reader.endObject();
+
+            if (n.equals("o")) {
+                offset = val;
+            } else if (n.equals("d") || n.equals("g")) {
+                composition.setHasDashPattern(true);
+                lineDashPattern.add(val);
+            }
+        }
+        reader.endArray();
+        if (lineDashPattern.size() == 1) {
+            // If there is only 1 value then it is assumed to be equal parts on and off.
+            lineDashPattern.add(lineDashPattern.get(0));
+        }
+
+        return offset;
     }
 }

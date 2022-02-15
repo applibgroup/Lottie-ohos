@@ -30,6 +30,7 @@ public class LottieAnimationViewData {
     //as OHOS platform matures all this content should come from xml like attr.xml
 
     public LottieAnimationViewData(){
+        //TODO
 
     };
 

@@ -63,8 +63,7 @@ public class NetworkCache {
         }
 
         //FileInputStream inputStream = null;
-        try {
-            FileInputStream inputStream = new FileInputStream(cachedFile);
+        try (FileInputStream inputStream = new FileInputStream(cachedFile);){
             FileExtension extension;
             if (cachedFile.getAbsolutePath().endsWith(".zip")) {
                 extension = FileExtension.ZIP;

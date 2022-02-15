@@ -79,6 +79,8 @@ final class JsonScope {
         case EMPTY_DOCUMENT:
         case CLOSED:
           break;
+        default:
+          break;
       }
     }
     return result.toString();

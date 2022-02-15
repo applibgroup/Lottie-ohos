@@ -86,6 +86,9 @@ public class GradientColorParser implements ValueParser<GradientColor> {
                     int b = (int) (value * 255);
                     colors[colorIndex] = Color.argb(255, r, g, b);
                     break;
+
+                default:
+                    break;
             }
         }
 

@@ -98,6 +98,10 @@ final class JsonUtf8Reader extends JsonReader {
 
     private static final int NUMBER_CHAR_EXP_DIGIT = 7;
 
+    private static final String AT_PATH = " at path ";
+    private static final String EXPECTED_INT = "Expected an int but was " ;
+    private static final String EXPECTED_VALUE = "Expected a value but was " ;
+
     /**
      * The input JSON.
      */
@@ -146,7 +150,7 @@ final class JsonUtf8Reader extends JsonReader {
             pathIndices[stackSize - 1] = 0;
             peeked = PEEKED_NONE;
         } else {
-            throw new JsonDataException("Expected BEGIN_ARRAY but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected BEGIN_ARRAY but was " + peek() + AT_PATH + getPath());
         }
     }
 
@@ -161,7 +165,7 @@ final class JsonUtf8Reader extends JsonReader {
             pathIndices[stackSize - 1]++;
             peeked = PEEKED_NONE;
         } else {
-            throw new JsonDataException("Expected END_ARRAY but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected END_ARRAY but was " + peek() + AT_PATH + getPath());
         }
     }
 
@@ -175,7 +179,7 @@ final class JsonUtf8Reader extends JsonReader {
             pushScope(JsonScope.EMPTY_OBJECT);
             peeked = PEEKED_NONE;
         } else {
-            throw new JsonDataException("Expected BEGIN_OBJECT but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected BEGIN_OBJECT but was " + peek() + AT_PATH + getPath());
         }
     }
 
@@ -191,7 +195,7 @@ final class JsonUtf8Reader extends JsonReader {
             pathIndices[stackSize - 1]++;
             peeked = PEEKED_NONE;
         } else {
-            throw new JsonDataException("Expected END_OBJECT but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected END_OBJECT but was " + peek() + AT_PATH + getPath());
         }
     }
 
@@ -245,95 +249,69 @@ final class JsonUtf8Reader extends JsonReader {
         }
     }
 
-    private int doPeek() throws IOException {
-        int peekStack = scopes[stackSize - 1];
-        if (peekStack == JsonScope.EMPTY_ARRAY) {
-            scopes[stackSize - 1] = JsonScope.NONEMPTY_ARRAY;
-        } else if (peekStack == JsonScope.NONEMPTY_ARRAY) {
-            // Look for a comma before the next element.
+    private int peekObject(int peekStack) throws IOException {
+        scopes[stackSize - 1] = JsonScope.DANGLING_NAME;
+        // Look for a comma before the next element.
+        if (peekStack == JsonScope.NONEMPTY_OBJECT) {
             int c = nextNonWhitespace(true);
-            buffer.readByte(); // consume ']' or ','.
+            buffer.readByte(); // Consume '}' or ','.
             switch (c) {
-                case ']':
-                    return peeked = PEEKED_END_ARRAY;
+                case '}':
+                    return peeked = PEEKED_END_OBJECT;
                 case ';':
                     checkLenient(); // fall-through
                 case ',':
                     break;
                 default:
-                    throw syntaxError("Unterminated array");
+                    throw syntaxError("Unterminated object");
             }
-        } else if (peekStack == JsonScope.EMPTY_OBJECT || peekStack == JsonScope.NONEMPTY_OBJECT) {
-            scopes[stackSize - 1] = JsonScope.DANGLING_NAME;
-            // Look for a comma before the next element.
-            if (peekStack == JsonScope.NONEMPTY_OBJECT) {
-                int c = nextNonWhitespace(true);
-                buffer.readByte(); // Consume '}' or ','.
-                switch (c) {
-                    case '}':
-                        return peeked = PEEKED_END_OBJECT;
-                    case ';':
-                        checkLenient(); // fall-through
-                    case ',':
-                        break;
-                    default:
-                        throw syntaxError("Unterminated object");
-                }
-            }
-            int c = nextNonWhitespace(true);
-            switch (c) {
-                case '"':
-                    buffer.readByte(); // consume the '\"'.
-                    return peeked = PEEKED_DOUBLE_QUOTED_NAME;
-                case '\'':
-                    buffer.readByte(); // consume the '\''.
-                    checkLenient();
-                    return peeked = PEEKED_SINGLE_QUOTED_NAME;
-                case '}':
-                    if (peekStack != JsonScope.NONEMPTY_OBJECT) {
-                        buffer.readByte(); // consume the '}'.
-                        return peeked = PEEKED_END_OBJECT;
-                    } else {
-                        throw syntaxError("Expected name");
-                    }
-                default:
-                    checkLenient();
-                    if (isLiteral((char) c)) {
-                        return peeked = PEEKED_UNQUOTED_NAME;
-                    } else {
-                        throw syntaxError("Expected name");
-                    }
-            }
-        } else if (peekStack == JsonScope.DANGLING_NAME) {
-            scopes[stackSize - 1] = JsonScope.NONEMPTY_OBJECT;
-            // Look for a colon before the value.
-            int c = nextNonWhitespace(true);
-            buffer.readByte(); // Consume ':'.
-            switch (c) {
-                case ':':
-                    break;
-                case '=':
-                    checkLenient();
-                    if (source.request(1) && buffer.getByte(0) == '>') {
-                        buffer.readByte(); // Consume '>'.
-                    }
-                    break;
-                default:
-                    throw syntaxError("Expected ':'");
-            }
-        } else if (peekStack == JsonScope.EMPTY_DOCUMENT) {
-            scopes[stackSize - 1] = JsonScope.NONEMPTY_DOCUMENT;
-        } else if (peekStack == JsonScope.NONEMPTY_DOCUMENT) {
-            int c = nextNonWhitespace(false);
-            if (c == -1) {
-                return peeked = PEEKED_EOF;
-            } else {
-                checkLenient();
-            }
-        } else if (peekStack == JsonScope.CLOSED) {
-            throw new IllegalStateException("JsonReader is closed");
         }
+        int c = nextNonWhitespace(true);
+        switch (c) {
+            case '"':
+                buffer.readByte(); // consume the '\"'.
+                return peeked = PEEKED_DOUBLE_QUOTED_NAME;
+            case '\'':
+                buffer.readByte(); // consume the '\''.
+                checkLenient();
+                return peeked = PEEKED_SINGLE_QUOTED_NAME;
+            case '}':
+                if (peekStack != JsonScope.NONEMPTY_OBJECT) {
+                    buffer.readByte(); // consume the '}'.
+                    return peeked = PEEKED_END_OBJECT;
+                } else {
+                    throw syntaxError("Expected name");
+                }
+            default:
+                checkLenient();
+                if (isLiteral((char) c)) {
+                    return peeked = PEEKED_UNQUOTED_NAME;
+                } else {
+                    throw syntaxError("Expected name");
+                }
+        }
+    }
 
+    private void peekDangling() throws IOException {
+        scopes[stackSize - 1] = JsonScope.NONEMPTY_OBJECT;
+        // Look for a colon before the value.
+        int c = nextNonWhitespace(true);
+        buffer.readByte(); // Consume ':'.
+        switch (c) {
+            case ':':
+                break;
+            case '=':
+                checkLenient();
+                if (source.request(1) && buffer.getByte(0) == '>') {
+                    buffer.readByte(); // Consume '>'.
+                }
+                break;
+            default:
+                throw syntaxError("Expected ':'");
+        }
+    }
+
+    private int peekStackLast(int peekStack) throws IOException {
         int c = nextNonWhitespace(true);
         switch (c) {
             case ']':
@@ -384,6 +362,43 @@ final class JsonUtf8Reader extends JsonReader {
         checkLenient();
         return peeked = PEEKED_UNQUOTED;
     }
+    private int doPeek() throws IOException {
+        int peekStack = scopes[stackSize - 1];
+        if (peekStack == JsonScope.EMPTY_ARRAY) {
+            scopes[stackSize - 1] = JsonScope.NONEMPTY_ARRAY;
+        } else if (peekStack == JsonScope.NONEMPTY_ARRAY) {
+            // Look for a comma before the next element.
+            int c = nextNonWhitespace(true);
+            buffer.readByte(); // consume ']' or ','.
+            switch (c) {
+                case ']':
+                    return peeked = PEEKED_END_ARRAY;
+                case ';':
+                    checkLenient(); // fall-through
+                case ',':
+                    break;
+                default:
+                    throw syntaxError("Unterminated array");
+            }
+        } else if (peekStack == JsonScope.EMPTY_OBJECT || peekStack == JsonScope.NONEMPTY_OBJECT) {
+            return peekObject(peekStack);
+        } else if (peekStack == JsonScope.DANGLING_NAME) {
+            peekDangling();
+        } else if (peekStack == JsonScope.EMPTY_DOCUMENT) {
+            scopes[stackSize - 1] = JsonScope.NONEMPTY_DOCUMENT;
+        } else if (peekStack == JsonScope.NONEMPTY_DOCUMENT) {
+            int c = nextNonWhitespace(false);
+            if (c == -1) {
+                return peeked = PEEKED_EOF;
+            } else {
+                checkLenient();
+            }
+        } else if (peekStack == JsonScope.CLOSED) {
+            throw new IllegalStateException("JsonReader is closed");
+        }
+
+     return peekStackLast(peekStack);
+    }
 
     private int peekKeyword() throws IOException {
         // Figure out which keyword we're matching against by its first character.
@@ -426,6 +441,21 @@ final class JsonUtf8Reader extends JsonReader {
         // We've found the keyword followed either by EOF or by a non-literal character.
         buffer.skip(length);
         return peeked = peeking;
+    }
+
+    private int peekedNumberCheck(int last,boolean negative,boolean fitsInLong,long value,int i) throws EOFException {
+        // We've read a complete number. Decide if it's a PEEKED_LONG or a PEEKED_NUMBER.
+        if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative) && (value != 0
+                || !negative)) {
+            peekedLong = negative ? value : -value;
+            buffer.skip(i);
+            return peeked = PEEKED_LONG;
+        } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT || last == NUMBER_CHAR_EXP_DIGIT) {
+            peekedNumberLength = i;
+            return peeked = PEEKED_NUMBER;
+        } else {
+            return PEEKED_NONE;
+        }
     }
 
     private int peekNumber() throws IOException {
@@ -503,18 +533,7 @@ final class JsonUtf8Reader extends JsonReader {
             }
         }
 
-        // We've read a complete number. Decide if it's a PEEKED_LONG or a PEEKED_NUMBER.
-        if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative) && (value != 0
-            || !negative)) {
-            peekedLong = negative ? value : -value;
-            buffer.skip(i);
-            return peeked = PEEKED_LONG;
-        } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT || last == NUMBER_CHAR_EXP_DIGIT) {
-            peekedNumberLength = i;
-            return peeked = PEEKED_NUMBER;
-        } else {
-            return PEEKED_NONE;
-        }
+        return peekedNumberCheck(last,negative,fitsInLong,value,i);
     }
 
     private boolean isLiteral(int c) throws IOException {
@@ -558,7 +577,7 @@ final class JsonUtf8Reader extends JsonReader {
         } else if (p == PEEKED_BUFFERED_NAME) {
             result = peekedString;
         } else {
-            throw new JsonDataException("Expected a name but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected a name but was " + peek() + AT_PATH + getPath());
         }
         peeked = PEEKED_NONE;
         pathNames[stackSize - 1] = result;
@@ -619,7 +638,7 @@ final class JsonUtf8Reader extends JsonReader {
         } else if (p == PEEKED_SINGLE_QUOTED_NAME) {
             skipQuotedValue(SINGLE_QUOTE_OR_SLASH);
         } else if (p != PEEKED_BUFFERED_NAME) {
-            throw new JsonDataException("Expected a name but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected a name but was " + peek() + AT_PATH + getPath());
         }
         peeked = PEEKED_NONE;
         pathNames[stackSize - 1] = "null";
@@ -665,7 +684,7 @@ final class JsonUtf8Reader extends JsonReader {
         } else if (p == PEEKED_NUMBER) {
             result = buffer.readUtf8(peekedNumberLength);
         } else {
-            throw new JsonDataException("Expected a string but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected a string but was " + peek() + AT_PATH + getPath());
         }
         peeked = PEEKED_NONE;
         pathIndices[stackSize - 1]++;
@@ -706,7 +725,7 @@ final class JsonUtf8Reader extends JsonReader {
             pathIndices[stackSize - 1]++;
             return false;
         }
-        throw new JsonDataException("Expected a boolean but was " + peek() + " at path " + getPath());
+        throw new JsonDataException("Expected a boolean but was " + peek() + AT_PATH + getPath());
     }
 
     @Override
@@ -731,7 +750,7 @@ final class JsonUtf8Reader extends JsonReader {
         } else if (p == PEEKED_UNQUOTED) {
             peekedString = nextUnquotedValue();
         } else if (p != PEEKED_BUFFERED) {
-            throw new JsonDataException("Expected a double but was " + peek() + " at path " + getPath());
+            throw new JsonDataException("Expected a double but was " + peek() + AT_PATH + getPath());
         }
 
         peeked = PEEKED_BUFFERED;
@@ -739,10 +758,10 @@ final class JsonUtf8Reader extends JsonReader {
         try {
             result = Double.parseDouble(peekedString);
         } catch (NumberFormatException e) {
-            throw new JsonDataException("Expected a double but was " + peekedString + " at path " + getPath());
+            throw new JsonDataException("Expected a double but was " + peekedString + AT_PATH + getPath());
         }
         if (!lenient && (Double.isNaN(result) || Double.isInfinite(result))) {
-            throw new JsonEncodingException("JSON forbids NaN and infinities: " + result + " at path " + getPath());
+            throw new JsonEncodingException("JSON forbids NaN and infinities: " + result + AT_PATH + getPath());
         }
         peekedString = null;
         peeked = PEEKED_NONE;
@@ -833,7 +852,7 @@ final class JsonUtf8Reader extends JsonReader {
         if (p == PEEKED_LONG) {
             result = (int) peekedLong;
             if (peekedLong != result) { // Make sure no precision was lost casting to 'int'.
-                throw new JsonDataException("Expected an int but was " + peekedLong + " at path " + getPath());
+                throw new JsonDataException(EXPECTED_INT + peekedLong + AT_PATH + getPath());
             }
             peeked = PEEKED_NONE;
             pathIndices[stackSize - 1]++;
@@ -855,7 +874,7 @@ final class JsonUtf8Reader extends JsonReader {
                 // Fall back to parse as a double below.
             }
         } else if (p != PEEKED_BUFFERED) {
-            throw new JsonDataException("Expected an int but was " + peek() + " at path " + getPath());
+            throw new JsonDataException(EXPECTED_INT + peek() + AT_PATH + getPath());
         }
 
         peeked = PEEKED_BUFFERED;
@@ -863,11 +882,11 @@ final class JsonUtf8Reader extends JsonReader {
         try {
             asDouble = Double.parseDouble(peekedString);
         } catch (NumberFormatException e) {
-            throw new JsonDataException("Expected an int but was " + peekedString + " at path " + getPath());
+            throw new JsonDataException(EXPECTED_INT + peekedString + AT_PATH + getPath());
         }
         result = (int) asDouble;
         if (result != asDouble) { // Make sure no precision was lost casting to 'int'.
-            throw new JsonDataException("Expected an int but was " + peekedString + " at path " + getPath());
+            throw new JsonDataException(EXPECTED_INT + peekedString + AT_PATH + getPath());
         }
         peekedString = null;
         peeked = PEEKED_NONE;
@@ -905,13 +924,13 @@ final class JsonUtf8Reader extends JsonReader {
             } else if (p == PEEKED_END_ARRAY) {
                 count--;
                 if (count < 0) {
-                    throw new JsonDataException("Expected a value but was " + peek() + " at path " + getPath());
+                    throw new JsonDataException(EXPECTED_VALUE + peek() + AT_PATH + getPath());
                 }
                 stackSize--;
             } else if (p == PEEKED_END_OBJECT) {
                 count--;
                 if (count < 0) {
-                    throw new JsonDataException("Expected a value but was " + peek() + " at path " + getPath());
+                    throw new JsonDataException(EXPECTED_VALUE + peek() + AT_PATH + getPath());
                 }
                 stackSize--;
             } else if (p == PEEKED_UNQUOTED_NAME || p == PEEKED_UNQUOTED) {
@@ -923,7 +942,7 @@ final class JsonUtf8Reader extends JsonReader {
             } else if (p == PEEKED_NUMBER) {
                 buffer.skip(peekedNumberLength);
             } else if (p == PEEKED_EOF) {
-                throw new JsonDataException("Expected a value but was " + peek() + " at path " + getPath());
+                throw new JsonDataException(EXPECTED_VALUE + peek() + AT_PATH + getPath());
             }
             peeked = PEEKED_NONE;
         } while (count != 0);
@@ -932,6 +951,20 @@ final class JsonUtf8Reader extends JsonReader {
         pathNames[stackSize - 1] = "null";
     }
 
+
+    private void endOfBlockCheck() throws IOException {
+        if (!skipToEndOfBlockComment()) {
+            throw syntaxError("Unterminated comment");
+        }
+    }
+
+    private int checkOnEof(Boolean throwOnEof) throws EOFException {
+        if (throwOnEof) {
+            throw new EOFException("End of input");
+        } else {
+            return -1;
+        }
+    }
     /**
      * Returns the next character in the stream that is neither whitespace nor a
      * part of a comment. When this returns, the returned character is always at
@@ -970,9 +1003,7 @@ final class JsonUtf8Reader extends JsonReader {
                         // skip a /* c-style comment */
                         buffer.readByte(); // '/'
                         buffer.readByte(); // '*'
-                        if (!skipToEndOfBlockComment()) {
-                            throw syntaxError("Unterminated comment");
-                        }
+                        endOfBlockCheck();
                         p = 0;
                         continue;
 
@@ -997,11 +1028,7 @@ final class JsonUtf8Reader extends JsonReader {
                 return c;
             }
         }
-        if (throwOnEof) {
-            throw new EOFException("End of input");
-        } else {
-            return -1;
-        }
+        return checkOnEof(throwOnEof);
     }
 
     private void checkLenient() throws IOException {
@@ -1038,6 +1065,11 @@ final class JsonUtf8Reader extends JsonReader {
         return "JsonReader(" + source + ")";
     }
 
+    private void sequencePath() throws IOException {
+        if (!source.request(4)) {
+            throw new EOFException("Unterminated escape sequence at path:" + getPath());
+        }
+    }
     /**
      * Unescapes the character identified by the character or characters that immediately follow a
      * backslash. The backslash '\' should have already been read. This supports both unicode escapes
@@ -1054,9 +1086,7 @@ final class JsonUtf8Reader extends JsonReader {
         byte escaped = buffer.readByte();
         switch (escaped) {
             case 'u':
-                if (!source.request(4)) {
-                    throw new EOFException("Unterminated escape sequence at path " + getPath());
-                }
+                sequencePath();
                 // Equivalent to Integer.parseInt(stringPool.get(buffer, pos, 4), 16);
                 char result = 0;
                 for (int i = 0, end = i + 4; i < end; i++) {

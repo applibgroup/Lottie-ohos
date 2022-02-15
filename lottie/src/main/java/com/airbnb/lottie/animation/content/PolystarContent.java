@@ -141,6 +141,62 @@ public class PolystarContent implements PathContent, BaseKeyframeAnimation.Anima
         return name;
     }
 
+    public void starPathCheck(int i,float x,float y, float previousX,float previousY,float innerRadius,float outerRadius, float innerRoundedness,float outerRoundedness,float partialPointAmount,double numPoints,boolean longSegment){
+        if (innerRoundedness == 0 && outerRoundedness == 0) {
+            path.lineTo(x, y);
+        } else {
+            float cp1Theta = (float) (Math.atan2(previousY, previousX) - Math.PI / 2f);
+            float cp1Dx = (float) Math.cos(cp1Theta);
+            float cp1Dy = (float) Math.sin(cp1Theta);
+
+            float cp2Theta = (float) (Math.atan2(y, x) - Math.PI / 2f);
+            float cp2Dx = (float) Math.cos(cp2Theta);
+            float cp2Dy = (float) Math.sin(cp2Theta);
+
+            float cp1Roundedness;
+            float cp2Roundedness;
+            float cp1Radius;
+            float cp2Radius;
+
+            if(longSegment){
+                cp1Roundedness = innerRoundedness;
+                cp2Roundedness = outerRoundedness;
+                cp1Radius = innerRadius;
+                cp2Radius = outerRadius;
+            }
+            else {
+                cp1Roundedness = outerRoundedness;
+                cp2Roundedness = innerRoundedness;
+                cp1Radius = outerRadius;
+                cp2Radius = innerRadius;
+            }
+
+//                float cp1Roundedness = longSegment ? innerRoundedness : outerRoundedness;
+//                float cp2Roundedness = longSegment ? outerRoundedness : innerRoundedness;
+//                float cp1Radius = longSegment ? innerRadius : outerRadius;
+//                float cp2Radius = longSegment ? outerRadius : innerRadius;
+
+            float cp1x = cp1Radius * cp1Roundedness * POLYSTAR_MAGIC_NUMBER * cp1Dx;
+            float cp1y = cp1Radius * cp1Roundedness * POLYSTAR_MAGIC_NUMBER * cp1Dy;
+            float cp2x = cp2Radius * cp2Roundedness * POLYSTAR_MAGIC_NUMBER * cp2Dx;
+            float cp2y = cp2Radius * cp2Roundedness * POLYSTAR_MAGIC_NUMBER * cp2Dy;
+            if (partialPointAmount != 0) {
+                if (i == 0) {
+                    cp1x *= partialPointAmount;
+                    cp1y *= partialPointAmount;
+                } else if (i == numPoints - 1) {
+                    cp2x *= partialPointAmount;
+                    cp2y *= partialPointAmount;
+                }
+            }
+
+            Point point1 = new Point(previousX - cp1x, previousY - cp1y);
+            Point point2 = new Point(x + cp2x, y + cp2y);
+            Point point3 = new Point(x, y);
+            path.cubicTo(point1, point2, point3);
+        }
+    }
+
     public void createStarPath() {
         float points = pointsAnimation.getValue();
         double currentAngle = rotationAnimation == null ? 0f : rotationAnimation.getValue();
@@ -203,41 +259,7 @@ public class PolystarContent implements PathContent, BaseKeyframeAnimation.Anima
             x = (float) (radius * Math.cos(currentAngle));
             y = (float) (radius * Math.sin(currentAngle));
 
-            if (innerRoundedness == 0 && outerRoundedness == 0) {
-                path.lineTo(x, y);
-            } else {
-                float cp1Theta = (float) (Math.atan2(previousY, previousX) - Math.PI / 2f);
-                float cp1Dx = (float) Math.cos(cp1Theta);
-                float cp1Dy = (float) Math.sin(cp1Theta);
-
-                float cp2Theta = (float) (Math.atan2(y, x) - Math.PI / 2f);
-                float cp2Dx = (float) Math.cos(cp2Theta);
-                float cp2Dy = (float) Math.sin(cp2Theta);
-
-                float cp1Roundedness = longSegment ? innerRoundedness : outerRoundedness;
-                float cp2Roundedness = longSegment ? outerRoundedness : innerRoundedness;
-                float cp1Radius = longSegment ? innerRadius : outerRadius;
-                float cp2Radius = longSegment ? outerRadius : innerRadius;
-
-                float cp1x = cp1Radius * cp1Roundedness * POLYSTAR_MAGIC_NUMBER * cp1Dx;
-                float cp1y = cp1Radius * cp1Roundedness * POLYSTAR_MAGIC_NUMBER * cp1Dy;
-                float cp2x = cp2Radius * cp2Roundedness * POLYSTAR_MAGIC_NUMBER * cp2Dx;
-                float cp2y = cp2Radius * cp2Roundedness * POLYSTAR_MAGIC_NUMBER * cp2Dy;
-                if (partialPointAmount != 0) {
-                    if (i == 0) {
-                        cp1x *= partialPointAmount;
-                        cp1y *= partialPointAmount;
-                    } else if (i == numPoints - 1) {
-                        cp2x *= partialPointAmount;
-                        cp2y *= partialPointAmount;
-                    }
-                }
-
-                Point point1 = new Point(previousX - cp1x, previousY - cp1y);
-                Point point2 = new Point(x + cp2x, y + cp2y);
-                Point point3 = new Point(x, y);
-                path.cubicTo(point1, point2, point3);
-            }
+            starPathCheck(i,x,y,previousX,previousY,innerRadius,outerRadius,innerRoundedness,outerRoundedness,partialPointAmount,numPoints,longSegment);
 
             currentAngle += dTheta;
             longSegment = !longSegment;

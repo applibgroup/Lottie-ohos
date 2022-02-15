@@ -12,6 +12,7 @@ import ohos.utils.PlainArray;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Optional;
 
 class KeyframeParser {
@@ -147,6 +148,115 @@ class KeyframeParser {
         return keyframe;
     }
 
+    private static ArrayList<Point> oKeyFrame(JsonReader reader, float scale) throws IOException {
+
+        Point cp1 = null;
+        Point xCp1 = null;
+        Point yCp1 = null;
+        ArrayList<Point> oKeyFramePoint = new ArrayList<>();
+
+        if (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
+            reader.beginObject();
+            float xCp1x = 0f;
+            float xCp1y = 0f;
+            float yCp1x = 0f;
+            float yCp1y = 0f;
+
+
+            while (reader.hasNext()) {
+                switch (reader.selectName(INTERPOLATOR_NAMES)) {
+                    case 0: // x
+                        if (reader.peek() == JsonReader.Token.NUMBER) {
+                            xCp1x = (float) reader.nextDouble();
+                            yCp1x = xCp1x;
+                        } else {
+                            reader.beginArray();
+                            xCp1x = (float) reader.nextDouble();
+                            yCp1x = (float) reader.nextDouble();
+                            reader.endArray();
+                        }
+                        break;
+                    case 1: // y
+                        if (reader.peek() == JsonReader.Token.NUMBER) {
+                            xCp1y = (float) reader.nextDouble();
+                            yCp1y = xCp1y;
+                        } else {
+                            reader.beginArray();
+                            xCp1y = (float) reader.nextDouble();
+                            yCp1y = (float) reader.nextDouble();
+                            reader.endArray();
+                        }
+                        break;
+                    default:
+                        reader.skipValue();
+                }
+            }
+            xCp1 = new Point(xCp1x, xCp1y);
+            yCp1 = new Point(yCp1x, yCp1y);
+            reader.endObject();
+        } else {
+            cp1 = JsonUtils.jsonToPoint(reader, scale);
+        }
+        oKeyFramePoint.add(xCp1);
+        oKeyFramePoint.add(yCp1);
+        oKeyFramePoint.add(cp1);
+        return oKeyFramePoint;
+    }
+
+    private static ArrayList<Point> iKeyFrame(JsonReader reader,float scale) throws IOException {
+
+        Point cp2 = null;
+        Point xCp2 = null;
+        Point yCp2 = null;
+
+        ArrayList<Point> iKeyFramePoint = new ArrayList<>();
+
+        if (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
+            reader.beginObject();
+            float xCp2x = 0f;
+            float xCp2y = 0f;
+            float yCp2x = 0f;
+            float yCp2y = 0f;
+            while (reader.hasNext()) {
+                switch (reader.selectName(INTERPOLATOR_NAMES)) {
+                    case 0: // x
+                        if (reader.peek() == JsonReader.Token.NUMBER) {
+                            xCp2x = (float) reader.nextDouble();
+                            yCp2x = xCp2x;
+                        } else {
+                            reader.beginArray();
+                            xCp2x = (float) reader.nextDouble();
+                            yCp2x = (float) reader.nextDouble();
+                            reader.endArray();
+                        }
+                        break;
+                    case 1: // y
+                        if (reader.peek() == JsonReader.Token.NUMBER) {
+                            xCp2y = (float) reader.nextDouble();
+                            yCp2y = xCp2y;
+                        } else {
+                            reader.beginArray();
+                            xCp2y = (float) reader.nextDouble();
+                            yCp2y = (float) reader.nextDouble();
+                            reader.endArray();
+                        }
+                        break;
+                    default:
+                        reader.skipValue();
+                }
+            }
+            xCp2 = new Point(xCp2x, xCp2y);
+            yCp2 = new Point(yCp2x, yCp2y);
+            reader.endObject();
+        } else {
+            cp2 = JsonUtils.jsonToPoint(reader, scale);
+        }
+        iKeyFramePoint.add(xCp2);
+        iKeyFramePoint.add(yCp2);
+        iKeyFramePoint.add(cp2);
+        return iKeyFramePoint;
+    }
+
     private static <T> Keyframe<T> parseMultiDimensionalKeyframe(LottieComposition composition, JsonReader reader,
                                                                  float scale, ValueParser<T> valueParser) throws IOException {
         Point cp1 = null;
@@ -156,6 +266,8 @@ class KeyframeParser {
         Point xCp2 = null;
         Point yCp1 = null;
         Point yCp2 = null;
+
+        ArrayList<Point> keyPoints;
 
         float startFrame = 0;
         T startValue = null;
@@ -182,88 +294,16 @@ class KeyframeParser {
                     endValue = valueParser.parse(reader, scale);
                     break;
                 case 3: // o
-                    if (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                        reader.beginObject();
-                        float xCp1x = 0f;
-                        float xCp1y = 0f;
-                        float yCp1x = 0f;
-                        float yCp1y = 0f;
-                        while (reader.hasNext()) {
-                            switch (reader.selectName(INTERPOLATOR_NAMES)) {
-                                case 0: // x
-                                    if (reader.peek() == JsonReader.Token.NUMBER) {
-                                        xCp1x = (float) reader.nextDouble();
-                                        yCp1x = xCp1x;
-                                    } else {
-                                        reader.beginArray();
-                                        xCp1x = (float) reader.nextDouble();
-                                        yCp1x = (float) reader.nextDouble();
-                                        reader.endArray();
-                                    }
-                                    break;
-                                case 1: // y
-                                    if (reader.peek() == JsonReader.Token.NUMBER) {
-                                        xCp1y = (float) reader.nextDouble();
-                                        yCp1y = xCp1y;
-                                    } else {
-                                        reader.beginArray();
-                                        xCp1y = (float) reader.nextDouble();
-                                        yCp1y = (float) reader.nextDouble();
-                                        reader.endArray();
-                                    }
-                                    break;
-                                default:
-                                    reader.skipValue();
-                            }
-                        }
-                        xCp1 = new Point(xCp1x, xCp1y);
-                        yCp1 = new Point(yCp1x, yCp1y);
-                        reader.endObject();
-                    } else {
-                        cp1 = JsonUtils.jsonToPoint(reader, scale);
-                    }
+                    keyPoints= oKeyFrame(reader,scale);
+                    xCp1 = keyPoints.get(0);
+                    yCp1 = keyPoints.get(1);
+                    cp1 = keyPoints.get(3);
                     break;
                 case 4: // i
-                    if (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                        reader.beginObject();
-                        float xCp2x = 0f;
-                        float xCp2y = 0f;
-                        float yCp2x = 0f;
-                        float yCp2y = 0f;
-                        while (reader.hasNext()) {
-                            switch (reader.selectName(INTERPOLATOR_NAMES)) {
-                                case 0: // x
-                                    if (reader.peek() == JsonReader.Token.NUMBER) {
-                                        xCp2x = (float) reader.nextDouble();
-                                        yCp2x = xCp2x;
-                                    } else {
-                                        reader.beginArray();
-                                        xCp2x = (float) reader.nextDouble();
-                                        yCp2x = (float) reader.nextDouble();
-                                        reader.endArray();
-                                    }
-                                    break;
-                                case 1: // y
-                                    if (reader.peek() == JsonReader.Token.NUMBER) {
-                                        xCp2y = (float) reader.nextDouble();
-                                        yCp2y = xCp2y;
-                                    } else {
-                                        reader.beginArray();
-                                        xCp2y = (float) reader.nextDouble();
-                                        yCp2y = (float) reader.nextDouble();
-                                        reader.endArray();
-                                    }
-                                    break;
-                                default:
-                                    reader.skipValue();
-                            }
-                        }
-                        xCp2 = new Point(xCp2x, xCp2y);
-                        yCp2 = new Point(yCp2x, yCp2y);
-                        reader.endObject();
-                    } else {
-                        cp2 = JsonUtils.jsonToPoint(reader, scale);
-                    }
+                    keyPoints = iKeyFrame(reader,scale);
+                    xCp2 = keyPoints.get(0);
+                    yCp2 = keyPoints.get(1);
+                    cp2 = keyPoints.get(2);
                     break;
                 case 5: // h
                     hold = reader.nextInt() == 1;

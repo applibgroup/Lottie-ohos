@@ -24,6 +24,22 @@ public class AnimatableTransformParser {
 
     private static final JsonReader.Options ANIMATABLE_NAMES = JsonReader.Options.of("k");
 
+    public static AnimatablePathValue getAnchorPoint(JsonReader reader, LottieComposition composition, AnimatablePathValue anchorPoint) throws IOException {
+        reader.beginObject();
+        while (reader.hasNext()) {
+            switch (reader.selectName(ANIMATABLE_NAMES)) {
+                case 0:
+                    anchorPoint = AnimatablePathValueParser.parse(reader, composition);
+                    break;
+                default:
+                    reader.skipName();
+                    reader.skipValue();
+            }
+        }
+        reader.endObject();
+        return anchorPoint;
+    }
+
     public static AnimatableTransform parse(JsonReader reader, LottieComposition composition) throws IOException {
         AnimatablePathValue anchorPoint = null;
         AnimatableValue<Point, Point> position = null;
@@ -42,18 +58,7 @@ public class AnimatableTransformParser {
         while (reader.hasNext()) {
             switch (reader.selectName(NAMES)) {
                 case 0:
-                    reader.beginObject();
-                    while (reader.hasNext()) {
-                        switch (reader.selectName(ANIMATABLE_NAMES)) {
-                            case 0:
-                                anchorPoint = AnimatablePathValueParser.parse(reader, composition);
-                                break;
-                            default:
-                                reader.skipName();
-                                reader.skipValue();
-                        }
-                    }
-                    reader.endObject();
+                    anchorPoint = getAnchorPoint(reader,composition,anchorPoint);
                     break;
                 case 1:
                     position = AnimatablePathValueParser.parseSplitPath(reader, composition);

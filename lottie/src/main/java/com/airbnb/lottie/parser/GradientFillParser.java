@@ -22,6 +22,11 @@ class GradientFillParser {
     private GradientFillParser() {
     }
 
+    private static GradientType getGradientType(GradientType gradientType, JsonReader reader) throws IOException {
+        gradientType = reader.nextInt() == 1 ? GradientType.LINEAR : GradientType.RADIAL;
+        return gradientType;
+    }
+
     static GradientFill parse(JsonReader reader, LottieComposition composition) throws IOException {
         String name = null;
         AnimatableGradientColorValue color = null;
@@ -59,7 +64,7 @@ class GradientFillParser {
                     opacity = AnimatableValueParser.parseInteger(reader, composition);
                     break;
                 case 3:
-                    gradientType = reader.nextInt() == 1 ? GradientType.LINEAR : GradientType.RADIAL;
+                    gradientType = getGradientType(gradientType,reader);
                     break;
                 case 4:
                     startPoint = AnimatableValueParser.parsePoint(reader, composition);

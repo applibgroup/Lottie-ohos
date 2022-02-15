@@ -62,6 +62,94 @@ public class LayerParser {
 
     private static final JsonReader.Options EFFECTS_NAMES = JsonReader.Options.of("nm");
 
+    private static ArrayList textPropCheck(JsonReader reader,LottieComposition composition) throws IOException {
+
+        AnimatableTextFrame text = null;
+        AnimatableTextProperties textProperties = null;
+        ArrayList textFrameValue = new ArrayList();
+
+        reader.beginObject();
+        while (reader.hasNext()) {
+            switch (reader.selectName(TEXT_NAMES)) {
+                case 0:
+                    text = AnimatableValueParser.parseDocumentData(reader, composition);
+                    break;
+                case 1:
+                    reader.beginArray();
+                    if (reader.hasNext()) {
+                        textProperties = AnimatableTextPropertiesParser.parse(reader, composition);
+                    }
+                    while (reader.hasNext()) {
+                        reader.skipValue();
+                    }
+                    reader.endArray();
+                    break;
+                default:
+                    reader.skipName();
+                    reader.skipValue();
+            }
+        }
+        reader.endObject();
+        textFrameValue.add(text);
+        textFrameValue.add(textProperties);
+        return textFrameValue;
+    }
+
+    private static void propCheck(JsonReader reader, LottieComposition composition) throws IOException {
+        reader.beginArray();
+        List<String> effectNames = new ArrayList<>();
+        while (reader.hasNext()) {
+            reader.beginObject();
+            while (reader.hasNext()) {
+                switch (reader.selectName(EFFECTS_NAMES)) {
+                    case 0:
+                        effectNames.add(reader.nextString());
+                        break;
+                    default:
+                        reader.skipName();
+                        reader.skipValue();
+
+                }
+            }
+            reader.endObject();
+        }
+        reader.endArray();
+        composition.addWarning("Lottie doesn't support layer effects. If you are using them for "
+                + " fills, strokes, trim paths etc. then try adding them directly as contents "
+                + " in your shape. Found: " + effectNames);
+    }
+
+    private static void maskProp(JsonReader reader,LottieComposition composition,List<Mask> masks) throws IOException {
+        reader.beginArray();
+        while (reader.hasNext()) {
+            masks.add(MaskParser.parse(reader, composition));
+        }
+        composition.incrementMatteOrMaskCount(masks.size());
+        reader.endArray();
+    }
+
+    private static void shapesProp(JsonReader reader,LottieComposition composition,List<ContentModel> shapes) throws IOException {
+        reader.beginArray();
+        while (reader.hasNext()) {
+            ContentModel shape = ContentModelParser.parse(reader, composition);
+            if (shape != null) {
+                shapes.add(shape);
+            }
+        }
+        reader.endArray();
+    }
+
+    private static Layer.LayerType layerCheck(JsonReader reader) throws IOException {
+        int layerTypeInt = reader.nextInt();
+        Layer.LayerType layerType;
+        if (layerTypeInt < Layer.LayerType.UNKNOWN.ordinal()) {
+            layerType = Layer.LayerType.values()[layerTypeInt];
+        } else {
+            layerType = Layer.LayerType.UNKNOWN;
+        }
+        return layerType;
+    }
+
     public static Layer parse(JsonReader reader, LottieComposition composition) throws IOException {
         // This should always be set by After Effects. However, if somebody wants to minify
         // and optimize their json, the name isn't critical for most cases so it can be removed.
@@ -104,12 +192,7 @@ public class LayerParser {
                     refId = reader.nextString();
                     break;
                 case 3:
-                    int layerTypeInt = reader.nextInt();
-                    if (layerTypeInt < Layer.LayerType.UNKNOWN.ordinal()) {
-                        layerType = Layer.LayerType.values()[layerTypeInt];
-                    } else {
-                        layerType = Layer.LayerType.UNKNOWN;
-                    }
+                    layerType = layerCheck(reader);
                     break;
                 case 4:
                     parentId = reader.nextInt();
@@ -144,69 +227,19 @@ public class LayerParser {
                     composition.incrementMatteOrMaskCount(1);
                     break;
                 case 10:
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        masks.add(MaskParser.parse(reader, composition));
-                    }
-                    composition.incrementMatteOrMaskCount(masks.size());
-                    reader.endArray();
+                    maskProp(reader,composition,masks);
                     break;
                 case 11:
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        ContentModel shape = ContentModelParser.parse(reader, composition);
-                        if (shape != null) {
-                            shapes.add(shape);
-                        }
-                    }
-                    reader.endArray();
+                    shapesProp(reader,composition,shapes);
                     break;
                 case 12:
-                    reader.beginObject();
-                    while (reader.hasNext()) {
-                        switch (reader.selectName(TEXT_NAMES)) {
-                            case 0:
-                                text = AnimatableValueParser.parseDocumentData(reader, composition);
-                                break;
-                            case 1:
-                                reader.beginArray();
-                                if (reader.hasNext()) {
-                                    textProperties = AnimatableTextPropertiesParser.parse(reader, composition);
-                                }
-                                while (reader.hasNext()) {
-                                    reader.skipValue();
-                                }
-                                reader.endArray();
-                                break;
-                            default:
-                                reader.skipName();
-                                reader.skipValue();
-                        }
-                    }
-                    reader.endObject();
+                    ArrayList textProp;
+                    textProp = textPropCheck(reader,composition);
+                    text = (AnimatableTextFrame) textProp.get(0);
+                    textProperties = (AnimatableTextProperties) textProp.get(1);
                     break;
                 case 13:
-                    reader.beginArray();
-                    List<String> effectNames = new ArrayList<>();
-                    while (reader.hasNext()) {
-                        reader.beginObject();
-                        while (reader.hasNext()) {
-                            switch (reader.selectName(EFFECTS_NAMES)) {
-                                case 0:
-                                    effectNames.add(reader.nextString());
-                                    break;
-                                default:
-                                    reader.skipName();
-                                    reader.skipValue();
-
-                            }
-                        }
-                        reader.endObject();
-                    }
-                    reader.endArray();
-                    composition.addWarning("Lottie doesn't support layer effects. If you are using them for "
-                        + " fills, strokes, trim paths etc. then try adding them directly as contents "
-                        + " in your shape. Found: " + effectNames);
+                    propCheck(reader,composition);
                     break;
                 case 14:
                     timeStretch = (float) reader.nextDouble();

@@ -22,6 +22,45 @@ class ShapeStrokeParser {
     private ShapeStrokeParser() {
     }
 
+    private static AnimatableFloatValue hdCheck(JsonReader reader,LottieComposition composition,AnimatableFloatValue offset,List<AnimatableFloatValue> lineDashPattern) throws IOException {
+        reader.beginArray();
+        while (reader.hasNext()) {
+            String n = null;
+            AnimatableFloatValue val = null;
+
+            reader.beginObject();
+            while (reader.hasNext()) {
+                switch (reader.selectName(DASH_PATTERN_NAMES)) {
+                    case 0:
+                        n = reader.nextString();
+                        break;
+                    case 1:
+                        val = AnimatableValueParser.parseFloat(reader, composition);
+                        break;
+                    default:
+                        reader.skipName();
+                        reader.skipValue();
+                }
+            }
+            reader.endObject();
+
+            switch (n) {
+                case "o":
+                    offset = val;
+                    break;
+                case "d":
+                case "g":
+                    composition.setHasDashPattern(true);
+                    lineDashPattern.add(val);
+                    break;
+                default:
+                    break;
+            }
+        }
+        reader.endArray();
+        return offset;
+    }
+
     static ShapeStroke parse(JsonReader reader, LottieComposition composition) throws IOException {
         String name = null;
         AnimatableColorValue color = null;
@@ -62,39 +101,7 @@ class ShapeStrokeParser {
                     hidden = reader.nextBoolean();
                     break;
                 case 8:
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        String n = null;
-                        AnimatableFloatValue val = null;
-
-                        reader.beginObject();
-                        while (reader.hasNext()) {
-                            switch (reader.selectName(DASH_PATTERN_NAMES)) {
-                                case 0:
-                                    n = reader.nextString();
-                                    break;
-                                case 1:
-                                    val = AnimatableValueParser.parseFloat(reader, composition);
-                                    break;
-                                default:
-                                    reader.skipName();
-                                    reader.skipValue();
-                            }
-                        }
-                        reader.endObject();
-
-                        switch (n) {
-                            case "o":
-                                offset = val;
-                                break;
-                            case "d":
-                            case "g":
-                                composition.setHasDashPattern(true);
-                                lineDashPattern.add(val);
-                                break;
-                        }
-                    }
-                    reader.endArray();
+                    offset = hdCheck(reader,composition,offset,lineDashPattern);
 
                     if (lineDashPattern.size() == 1) {
                         // If there is only 1 value then it is assumed to be equal parts on and off.

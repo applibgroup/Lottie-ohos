@@ -44,9 +44,9 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
     }
   };
 
-  Comparator<? super K> comparator;
-  Node<K, V>[] table;
-  final Node<K, V> header;
+  transient Comparator<? super K> comparator;
+  transient Node<K, V>[] table;
+  transient final Node<K, V> header;
   int size = 0;
   int modCount = 0;
   int threshold;
@@ -122,6 +122,28 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
     return node != null ? node.value : null;
   }
 
+  private Node<K, V> nearestCheck(Node<K, V> nearest,K key,Comparable<Object> comparableKey){
+    while (true) {
+      int comparison = (comparableKey != null)
+              ? comparableKey.compareTo(nearest.key)
+              : comparator.compare(key, nearest.key);
+
+      // We found the requested key.
+      if (comparison == 0) {
+        return nearest;
+      }
+
+      // If it exists, the key is in a subtree. Go deeper.
+      Node<K, V> child = (comparison < 0) ? nearest.left : nearest.right;
+      if (child == null) {
+        break;
+      }
+
+      nearest = child;
+    }
+    return nearest;
+  }
+
   /**
    * Returns the node at or adjacent to the given key, creating it if requested.
    * @param key Returns the node at or adjacent to the given key
@@ -145,24 +167,7 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
           ? (Comparable<Object>) key
           : null;
 
-      while (true) {
-        comparison = (comparableKey != null)
-            ? comparableKey.compareTo(nearest.key)
-            : comparator.compare(key, nearest.key);
-
-        // We found the requested key.
-        if (comparison == 0) {
-          return nearest;
-        }
-
-        // If it exists, the key is in a subtree. Go deeper.
-        Node<K, V> child = (comparison < 0) ? nearest.left : nearest.right;
-        if (child == null) {
-          break;
-        }
-
-        nearest = child;
-      }
+      nearest = nearestCheck(nearest,key,comparableKey);
     }
 
     // The key doesn't exist in this tree.
@@ -336,6 +341,38 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
     }
   }
 
+  private void deltaRight(Node<K, V> node,Node<K, V> right,boolean insert){
+    Node<K, V> rightLeft = right.left;
+    Node<K, V> rightRight = right.right;
+    int rightRightHeight = rightRight != null ? rightRight.height : 0;
+    int rightLeftHeight = rightLeft != null ? rightLeft.height : 0;
+
+    int rightDelta = rightLeftHeight - rightRightHeight;
+    if (rightDelta == -1 || (rightDelta == 0 && !insert)) {
+      rotateLeft(node); // AVL right right
+    } else {
+      assert (rightDelta == 1);
+      rotateRight(right); // AVL right left
+      rotateLeft(node);
+    }
+  }
+
+  private void deltaLeft(Node<K, V> node,Node<K, V> left,boolean insert){
+    Node<K, V> leftLeft = left.left;
+    Node<K, V> leftRight = left.right;
+    int leftRightHeight = leftRight != null ? leftRight.height : 0;
+    int leftLeftHeight = leftLeft != null ? leftLeft.height : 0;
+
+    int leftDelta = leftLeftHeight - leftRightHeight;
+    if (leftDelta == 1 || (leftDelta == 0 && !insert)) {
+      rotateRight(node); // AVL left left
+    } else {
+      assert (leftDelta == -1);
+      rotateLeft(left); // AVL left right
+      rotateRight(node);
+    }
+  }
+
   /**
    * Rebalances the tree by making any AVL rotations necessary between the
    * newly-unbalanced node and the tree's root.
@@ -352,37 +389,13 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
 
       int delta = leftHeight - rightHeight;
       if (delta == -2) {
-        Node<K, V> rightLeft = right.left;
-        Node<K, V> rightRight = right.right;
-        int rightRightHeight = rightRight != null ? rightRight.height : 0;
-        int rightLeftHeight = rightLeft != null ? rightLeft.height : 0;
-
-        int rightDelta = rightLeftHeight - rightRightHeight;
-        if (rightDelta == -1 || (rightDelta == 0 && !insert)) {
-          rotateLeft(node); // AVL right right
-        } else {
-          assert (rightDelta == 1);
-          rotateRight(right); // AVL right left
-          rotateLeft(node);
-        }
+        deltaRight(node,right,insert);
         if (insert) {
           break; // no further rotations will be necessary
         }
 
       } else if (delta == 2) {
-        Node<K, V> leftLeft = left.left;
-        Node<K, V> leftRight = left.right;
-        int leftRightHeight = leftRight != null ? leftRight.height : 0;
-        int leftLeftHeight = leftLeft != null ? leftLeft.height : 0;
-
-        int leftDelta = leftLeftHeight - leftRightHeight;
-        if (leftDelta == 1 || (leftDelta == 0 && !insert)) {
-          rotateRight(node); // AVL left left
-        } else {
-          assert (leftDelta == -1);
-          rotateLeft(left); // AVL left right
-          rotateRight(node);
-        }
+        deltaLeft(node,left,insert);
         if (insert) {
           break; // no further rotations will be necessary
         }
@@ -461,8 +474,8 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
         pivotLeft != null ? pivotLeft.height : 0) + 1;
   }
 
-  private EntrySet entrySet;
-  private KeySet key_Set;
+  private transient EntrySet entrySet;
+  private transient KeySet key_Set;
 
   @Override public Set<Entry<K, V>> entrySet() {
     EntrySet result = entrySet;
@@ -820,16 +833,13 @@ final class LinkedHashTreeMap<K, V> extends AbstractMap<K, V> implements Seriali
     }
 
     @Override public boolean remove(Object o) {
-      if (!(o instanceof Entry)) {
-        return false;
-      }
-
       Node<K, V> node = findByEntry((Entry<?, ?>) o);
-      if (node == null) {
+      if (!(o instanceof Entry) || (node == null)){
         return false;
+      }else {
+        removeInternal(node, true);
+        return true;
       }
-      removeInternal(node, true);
-      return true;
     }
 
     @Override public void clear() {
