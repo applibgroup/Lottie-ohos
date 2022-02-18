@@ -1,0 +1,312 @@
+{
+  "strings": {
+    "home": {
+      "tabsData": {
+        "api": {
+          "name": "API",
+          "desc": "api function display",
+          "groupList": [
+            {
+              "name": "basic function",
+              "caseList": [
+                {
+                  "name": "context",
+                  "path": "pages/api/basic_func/context/context"
+                },
+                {
+                  "name": "log",
+                  "path": "pages/api/basic_func/log/log"
+                },
+                {
+                  "name": "router",
+                  "path": "pages/api/basic_func/router/router"
+                },
+                {
+                  "name": "prompt",
+                  "path": "pages/api/basic_func/prompt/prompt"
+                }
+              ]
+            },
+            {
+              "name": "network",
+              "caseList": [
+              ]
+            },
+            {
+              "name": "storage",
+              "caseList": [
+              ]
+            },
+            {
+              "name": "system",
+              "caseList": [
+              ]
+            },
+            {
+              "name": "figure",
+              "caseList": [
+              ]
+            },
+            {
+              "name": "JS FA",
+              "caseList": [
+              ]
+            },
+            {
+              "name": "multi",
+              "caseList": [
+              ]
+            }
+          ]
+        },
+        "component": {
+          "name": "COMPONENT",
+          "desc": "Component capabilities display. Component styles are for reference only. See the development document for specific property parameters.",
+          "groupList": [
+            {
+              "name": "basic",
+              "caseList": [
+                {
+                  "name": "select",
+                  "path": "pages/component/basic/select/index"
+                },
+                {
+                  "name": "marquee",
+                  "path": "pages/component/basic/marquee/index"
+                },
+                {
+                  "name": "menu",
+                  "path": "pages/component/basic/menu/index"
+                },
+                {
+                  "name": "picker",
+                  "path": "pages/component/basic/picker/index"
+                },
+                {
+                  "name": "picker-view",
+                  "path": "pages/component/basic/picker-view/index"
+                },
+                {
+                  "name": "text",
+                  "path": "pages/component/basic/text/index"
+                },
+                {
+                  "name": "pseudoClass",
+                  "path": "pages/component/basic/pseudoClass/index"
+                },
+                {
+                  "name": "progress",
+                  "path": "pages/component/basic/progress/index"
+                },
+                {
+                  "name": "chart",
+                  "path": "pages/component/basic/chart/index"
+                },
+                {
+                  "name": "slider",
+                  "path": "pages/component/basic/slider/index"
+                },
+                {
+                  "name": "rating",
+                  "path": "pages/component/basic/rating/index"
+                },
+                {
+                  "name": "switch",
+                  "path": "pages/component/basic/switch/index"
+                },
+                {
+                  "name": "search",
+                  "path": "pages/component/basic/search/index"
+                },
+                {
+                  "name": "label",
+                  "path": "pages/component/basic/label/index"
+                },
+                {
+                  "name": "image",
+                  "path": "pages/component/basic/image/index"
+                },
+                {
+                  "name": "navigation",
+                  "path": "pages/component/basic/navigation/index"
+                },
+                {
+                  "name": "button",
+                  "path": "pages/component/basic/button/index"
+                }
+              ]
+            },
+            {
+              "name": "container",
+              "caseList": [
+                {
+                  "name": "div",
+                  "path": "pages/component/container/div/index"
+                },
+                {
+                  "name": "tab",
+                  "path": "pages/component/container/tab/index"
+                },
+                {
+                  "name": "refresh",
+                  "path": "pages/component/container/refresh/index"
+                },
+                {
+                  "name": "list",
+                  "path": "pages/component/container/list/index"
+                },
+                {
+                  "name": "list group",
+                  "path": "pages/component/container/listgroup/index"
+                },
+                {
+                  "name": "indexer",
+                  "path": "pages/component/container/indexer/index"
+                },
+                {
+                  "name": "swiper",
+                  "path": "pages/component/container/swiper/index"
+                }
+              ]
+            },
+            {
+              "name": "media",
+              "caseList": [
+                {
+                  "name": "video",
+                  "path": "pages/component/media/video/index"
+                }
+              ]
+            },
+            {
+              "name": "canvas",
+              "caseList": [
+                {
+                  "name": "canvas",
+                  "path": "pages/component/canvas/canvas/index"
+                }
+              ]
+            }
+          ]
+        },
+        "animations": {
+          "name": "ANIMATIONS",
+          "desc": "Animation capabilities display. See the development document for specific property parameters.",
+          "groupList": [
+            {
+              "name": "animation",
+              "caseList": [
+                {
+                  "name": "sample",
+                  "path": "pages/animations/sample/sample/sample"
+                }
+              ]
+            }
+          ]
+        },
+        "theme": {
+          "name": "THEME",
+          "desc": "Theme capabilities display. See the development document for specific property parameters.",
+          "groupList": [
+            {
+              "name": "Theme",
+              "caseList": [
+                {
+                  "name": "Use system style(less)",
+                  "path": "pages/theme/theme_less/theme_less"
+                },
+                {
+                  "name": "Use system style(scss)",
+                  "path": "pages/theme/theme_scss/theme_scss"
+                },
+                {
+                  "name": "Use system style(sass)",
+                  "path": "pages/theme/theme_sass/theme_sass"
+                },
+                {
+                  "name": "Custom style",
+                  "path": "pages/theme/custom_style/custom_style"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "backBar": {
+        "back": "back"
+      }
+    },
+    "api": {
+      "basic_func": {
+        "context": {
+          "name": "context"
+        },
+        "log": {
+          "name": "log"
+        },
+        "router": {
+          "name": "router"
+        },
+        "prompt": {
+          "name": "prompt"
+        }
+      }
+    },
+    "component": {
+      "basic": {
+        "text": {
+          "name": "text"
+        }
+      },
+      "container": {
+        "div": {
+          "name": "div"
+        },
+        "tab": {
+          "bar1":"page1",
+          "bar2":"page2",
+          "bar3":"page3",
+          "content1": "text in content 1",
+          "content2": "text in content 2",
+          "content3": "text in content 3"
+        },
+        "refresh": {
+          "stop": "Stop refreshing",
+          "refreshing": "Refreshing",
+          "refreshEnd": "Refreshing finish",
+          "isPulldown": "Set type to pulldown"
+        }
+      },
+      "media": {
+        "video": {
+          "name": "video",
+          "event": "event:",
+          "pos": "pos:",
+          "play": "play",
+          "pause": "pause",
+          "seek": "seek to 10s",
+          "fullscreen": "fullscreen"
+        }
+      },
+      "canvas": {
+        "canvas": {
+          "name": "canvas"
+        }
+      }
+    },
+    "animations": {
+      "sample": {
+        "sample": {
+          "name": "sample"
+        }
+      }
+    },
+    "theme": {
+      "systemStyleDesc": "All system style could be import:",
+      "customThemeDesc": "Showing custom global theme with marquee. To see more custom style, copy contents of 'default_component.json'(custom components style) or 'default_system.json'(custom system style) in 'showcases/pages/theme/custom_theme' to 'share/resources/styles/default.json'",
+      "custom_style": {
+        "marqueeTitle": "Custom style for default marquee:"
+      }
+    }
+  }
+}

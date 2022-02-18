@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="issues">
+    <option name="index">
+      <map>
+        <entry key="$PROJECT_DIR$/../DialogV3-master/DialogV3-master/build.gradle">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/../DialogV3-master/DialogV3-master/entry/src/main/config.json">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/build.gradle">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/entry/build.gradle">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/entry/src/main/config.json">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/entry/src/main/java/com/airbnb/lottie/LottieValueAnimatorUnitTest.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/entry/src/main/java/com/airbnb/lottie/demo/LottieValueAnimatorUnitTest.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/gradle.properties">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/LottieAnimationView.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/LottieCompositionFactory.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/LottieDrawable.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/LottieImageAsset.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/LottieProperty.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/animation/content/BaseStrokeContent.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/animation/content/PolystarContent.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/animation/keyframe/SplitDimensionPathKeyframeAnimation.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/animation/keyframe/TransformKeyframeAnimation.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/manager/ImageAssetManager.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/model/LottieCompositionCache.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/model/layer/BaseLayer.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/model/layer/CompositionLayer.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/model/layer/TextLayer.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/network/NetworkCache.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/network/NetworkFetcher.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/parser/AnimatableTransformParser.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/parser/LottieCompositionParser.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/lottie/src/main/java/com/airbnb/lottie/parser/moshi/LinkedHashTreeMap.java">
+          <value>
+            <set />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
